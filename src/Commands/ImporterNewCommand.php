@@ -9,6 +9,8 @@ class ImporterNewCommand extends GeneratorCommand
 {
     protected $signature = 'importer:new {name}';
 
+    protected $type = 'Importer';
+
     /**
      * @inheritDoc
      */
@@ -19,6 +21,6 @@ class ImporterNewCommand extends GeneratorCommand
 
     protected function getDefaultNamespace($rootNamespace)
     {
-        return $rootNamespace.'\\Backup\\Importers';
+        return config('backup-importer.namespace', $rootNamespace.'\\Backup\\Importers');
     }
 }
