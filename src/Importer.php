@@ -32,7 +32,7 @@ class Importer
     /**
      * @var Connection
      */
-    public $connection;
+    protected $connection;
 
     /**
      * Tally all the imported items
@@ -65,7 +65,7 @@ class Importer
             $importers = [];
             foreach(glob($this->getImportersPath() . DIRECTORY_SEPARATOR . '*.php') as $importer) {
                 if($importer !== $this->getImportersPath(). DIRECTORY_SEPARATOR . 'BaseImporter.php') {
-                    $importers[] = $importer;
+                    $importers[] = $this->namespace . '\\' . last(explode(DIRECTORY_SEPARATOR, $importer));
                 }
             }
         }
@@ -141,5 +141,15 @@ class Importer
         }
 
         return app_path(implode(DIRECTORY_SEPARATOR, $exploded));
+    }
+
+    /**
+     * Get the connection
+     *
+     * @return Connection
+     */
+    public function getConnection(): Connection
+    {
+        return $this->connection;
     }
 }
