@@ -20,34 +20,18 @@ $ php artisan vendor:publish
 
 ### Add Backup Database Config
 
-You will need to add an additional database provider to `config/database.php`
+By default this will use your `mysql` database connection with the `DB_BACKUP_DATABASE` value from your `.env` file or `backup` as the database name
 
-Copy your default driver config and change the name to `backup` and change the database name.
-
-If using MySQL
-
-```php
-// config/database.php
-
-'backup' => [
-    'driver' => 'mysql',
-    'host' => env('DB_HOST', '127.0.0.1'),
-    'port' => env('DB_PORT', '3306'),
-    'database' => env('DB_BACKUP_DATABASE', 'backup'),
-    'username' => env('DB_USERNAME', 'forge'),
-    'password' => env('DB_PASSWORD', ''),
-    'unix_socket' => env('DB_SOCKET', ''),
-    'charset' => 'utf8mb4',
-    'collation' => 'utf8mb4_unicode_ci',
-    'prefix' => '',
-    'strict' => true,
-    'engine' => null,
-],
-```
-
-Then set the `DB_BACKUP_DATABASE` value in your `.env` file
+Add connection details to `config/backup-importer.php`
 
 ## Usage
+
+### Run your importers
+
+```bash
+$ php artisan importer:run
+```
+
 
 ### Create an Importer
 

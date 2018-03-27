@@ -3,8 +3,8 @@
 namespace TaylorNetwork\BackupImporter;
 
 use Illuminate\Database\Connection;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Connectors\ConnectionFactory;
+
 
 class Importer
 {
@@ -23,11 +23,11 @@ class Importer
     public $namespace;
 
     /**
-     * Show status messages (true if running from command line)
+     * Show status messages
      *
      * @var bool
      */
-    public $showMessages = true;
+    public $showMessages;
 
     /**
      * @var Connection
@@ -43,20 +43,13 @@ class Importer
 
     /**
      * Importer constructor.
-     *
-     * @throws ImportException
      */
     public function __construct()
     {
-        $this->imports = Config::get('backup-importer.use-importers', ['*']);
-        $this->namespace = Config::get('backup-importer.namespace', 'App\\Backup\\Importers');
-
-        if(Config::get('database.connections.backup', null) !== null) {
-            throw new ImportException('The \'backup\' database connection has not been set in config/database.php');
-        }
-
-        $this->connection = DB::connection('backup');
-
+        $this->showMessages = config('backup-importer.cli-messages', true);
+        $this->imports = config('backup-importer.use-importers', ['*']);
+        $this->namespace = config('backup-importer.namespace', 'App\\Backup\\Importers');
+        $this->connection = app(ConnectionFactory::class)->make($this->getDBConfig(), 'backup');
     }
 
     /**
@@ -115,5 +108,23 @@ class Importer
                 echo $message;
             }
         }
+    }
+
+    /**
+     * Get Backup Database Config
+     *
+     * @return array
+     */
+    public function getDBConfig(): array
+    {
+        $dbConfig = config('backup-importer.db-connection');
+
+        foreach(config('database.connections.' . $dbConfig['driver']) as $key => $value) {
+            if(!array_key_exists($key, $dbConfig)) {
+                $dbConfig[$key] = $value;
+            }
+        }
+
+        return $dbConfig;
     }
 }
