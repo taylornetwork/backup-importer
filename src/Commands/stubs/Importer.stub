@@ -1,0 +1,21 @@
+<?php
+
+namespace DummyNamespace;
+
+use TaylorNetwork\BackupImporter\BaseImporter;
+
+class DummyClass extends BaseImporter
+{
+    /**
+     * Define how the data will be imported
+     *
+     * If the tables are identical and don't have relations, leave this definition.
+     *
+     * @see https://github.com/taylornetwork/backup-importer
+     * @return int
+     */
+    public function import(): int
+    {
+        return $this->simpleImport();
+    }
+}
