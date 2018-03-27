@@ -4,6 +4,7 @@ namespace TaylorNetwork\BackupImporter;
 
 use Illuminate\Support\ServiceProvider as BaseProvider;
 use TaylorNetwork\BackupImporter\Commands\ImporterNewCommand;
+use TaylorNetwork\BackupImporter\Commands\ImporterRunCommand;
 
 class ServiceProvider extends BaseProvider
 {
@@ -20,6 +21,7 @@ class ServiceProvider extends BaseProvider
 
         $this->commands([
             ImporterNewCommand::class,
+            ImporterRunCommand::class,
         ]);
     }
 }
