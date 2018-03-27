@@ -47,9 +47,9 @@ class Importer
     public function __construct()
     {
         $this->cliMessages = config('backup-importer.cli-messages', true);
-        $this->importers = config('backup-importer.use-importers', ['*']);
-        $this->namespace = config('backup-importer.namespace', 'App\\Backup\\Importers');
-        $this->connection = app(ConnectionFactory::class)->make($this->getDBConfig(), 'backup');
+        $this->importers = $this->buildImporters();
+        $this->namespace = $this->buildNamespace();
+        $this->connection = $this->makeConnection();
     }
 
     /**
@@ -59,20 +59,9 @@ class Importer
      */
     public function import(): int
     {
-        $importers = $this->importers;
-
-        if(in_array('*', $importers)) {
-            $importers = [];
-            foreach(glob($this->getImportersPath() . DIRECTORY_SEPARATOR . '*.php') as $importer) {
-                if($importer !== $this->getImportersPath(). DIRECTORY_SEPARATOR . 'BaseImporter.php') {
-                    $importers[] = $this->namespace . '\\' . last(explode(DIRECTORY_SEPARATOR, $importer));
-                }
-            }
-        }
-
-        foreach($importers as $importer) {
+        foreach($this->importers as $importer) {
             $this->msg('===== START =====');
-            $instance = new $importer($this->connection);
+            $instance = new $importer($this->getConnection());
             $this->msg('Loaded ' . $importer);
 
             $this->msg('Executing \'$instance->init()\'');
@@ -150,6 +139,89 @@ class Importer
      */
     public function getConnection(): Connection
     {
+        if(!$this->connection instanceof Connection) {
+            $this->connection = $this->makeConnection();
+        }
+
         return $this->connection;
+    }
+
+    /**
+     * Get the connection factory
+     *
+     * @return ConnectionFactory
+     */
+    public function getConnectionFactory(): ConnectionFactory
+    {
+        return app(ConnectionFactory::class);
+    }
+
+    /**
+     * Make a connection using the factory
+     *
+     * @param array $config
+     * @param string $name
+     * @return Connection
+     */
+    public function makeConnection($config = [], $name = 'backup'): Connection
+    {
+        if($config === []) {
+            $config = $this->getDBConfig();
+        }
+
+        return $this->getConnectionFactory()->make($config, $name);
+    }
+
+    /**
+     * Build the namespace
+     *
+     * @return string
+     */
+    public function buildNamespace(): string
+    {
+        $namespace = config('backup-importer.namespace', 'App\\Backup\\Importers');
+
+        if(substr($namespace, -1, 1) === '\\') {
+            $namespace = substr($namespace, 0, -1);
+        }
+
+        return $namespace;
+    }
+
+    /**
+     * Get the path to the importers
+     *
+     * @return string
+     */
+    public function getImporterPath(): string
+    {
+        $namespaceArray = explode('\\', $this->namespace);
+
+        if(strtolower($namespaceArray[0]) === 'app') {
+            unset($namespaceArray[0]);
+        }
+
+        return app_path(implode(DIRECTORY_SEPARATOR, $namespaceArray));
+    }
+
+    /**
+     * Build the importer list
+     *
+     * @return array
+     */
+    public function buildImporters(): array
+    {
+        $importers = config('backup-importer.importers', ['*']);
+
+        if(in_array('*', $importers)) {
+            $importers = [];
+
+            foreach(glob($this->getImportersPath().DIRECTORY_SEPARATOR.'*.php') as $importer) {
+                $importers[] = $this->namespace . '\\' .
+                    str_replace('.php', '', last(explode(DIRECTORY_SEPARATOR, $importer)));
+            }
+        }
+
+        return $importers;
     }
 }
