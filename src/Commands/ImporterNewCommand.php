@@ -16,7 +16,7 @@ class ImporterNewCommand extends GeneratorCommand
      */
     protected function getStub()
     {
-        return __DIR__.'/stubs/Importer.stub';
+        return implode(DIRECTORY_SEPARATOR, [__DIR__,'stubs','Importer.stub']);
     }
 
     protected function getDefaultNamespace($rootNamespace)

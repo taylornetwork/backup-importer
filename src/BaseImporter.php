@@ -3,10 +3,10 @@
 namespace TaylorNetwork\BackupImporter;
 
 use Illuminate\Database\Eloquent\Model;
-use TaylorNetwork\BackupImporter\ImportException;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
+use TaylorNetwork\BackupImporter\ImportException;
 
 abstract class BaseImporter
 {
@@ -96,8 +96,8 @@ abstract class BaseImporter
             return get_model($modelName);
         }
 
-        if(Config::get('models.namespace', null) !== null) {
-            $namespace = Config::get('models.namespace');
+        if(config('models.namespace', null) !== null) {
+            $namespace = config('models.namespace');
 
             if(substr($namespace, -1) !== '\\') {
                 $namespace .= '\\';

@@ -63,9 +63,8 @@ class Importer
 
         if(in_array('*', $importers)) {
             $importers = [];
-            $importersPath = base_path(str_replace('\\', DIRECTORY_SEPARATOR, $this->namespace));
-            foreach(glob($importersPath . '/*.php') as $importer) {
-                if($importer !== $importersPath.'/BaseImporter.php') {
+            foreach(glob($this->getImportersPath() . DIRECTORY_SEPARATOR . '*.php') as $importer) {
+                if($importer !== $this->getImportersPath(). DIRECTORY_SEPARATOR . 'BaseImporter.php') {
                     $importers[] = $importer;
                 }
             }
@@ -126,5 +125,21 @@ class Importer
         }
 
         return $dbConfig;
+    }
+
+    /**
+     * Get the path of the importers
+     *
+     * @return string
+     */
+    public function getImportersPath(): string
+    {
+        $exploded = explode('\\', $this->namespace);
+
+        if(strtolower($exploded[0]) === 'app') {
+            unset($exploded[0]);
+        }
+
+        return app_path(implode(DIRECTORY_SEPARATOR, $exploded));
     }
 }
