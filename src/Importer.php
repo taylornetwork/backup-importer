@@ -13,7 +13,7 @@ class Importer
      *
      * @var array
      */
-    public $imports;
+    public $importers;
 
     /**
      * Namespace for the importers
@@ -27,7 +27,7 @@ class Importer
      *
      * @var bool
      */
-    public $showMessages;
+    public $cliMessages;
 
     /**
      * @var Connection
@@ -46,8 +46,8 @@ class Importer
      */
     public function __construct()
     {
-        $this->showMessages = config('backup-importer.cli-messages', true);
-        $this->imports = config('backup-importer.use-importers', ['*']);
+        $this->cliMessages = config('backup-importer.cli-messages', true);
+        $this->importers = config('backup-importer.use-importers', ['*']);
         $this->namespace = config('backup-importer.namespace', 'App\\Backup\\Importers');
         $this->connection = app(ConnectionFactory::class)->make($this->getDBConfig(), 'backup');
     }
@@ -59,19 +59,19 @@ class Importer
      */
     public function import(): int
     {
-        $imports = $this->imports;
+        $importers = $this->importers;
 
-        if(in_array('*', $imports)) {
-            $imports = [];
-            $importsPath = __DIR__.'/Imports';
-            foreach(glob($importsPath . '/*.php') as $importer) {
-                if($importer !== $importsPath.'/BaseImporter.php') {
-                    $imports[] = $importer;
+        if(in_array('*', $importers)) {
+            $importers = [];
+            $importersPath = base_path(str_replace('\\', DIRECTORY_SEPARATOR, $this->namespace));
+            foreach(glob($importersPath . '/*.php') as $importer) {
+                if($importer !== $importersPath.'/BaseImporter.php') {
+                    $importers[] = $importer;
                 }
             }
         }
 
-        foreach($imports as $importer) {
+        foreach($importers as $importer) {
             $this->msg('===== START =====');
             $instance = new $importer($this->connection);
             $this->msg('Loaded ' . $importer);
@@ -101,7 +101,7 @@ class Importer
      */
     public function msg(string $message): void
     {
-        if($this->showMessages) {
+        if($this->cliMessages) {
             if(function_exists('dump')) {
                 dump($message);
             } else {
