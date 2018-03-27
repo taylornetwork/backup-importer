@@ -47,8 +47,8 @@ class Importer
     public function __construct()
     {
         $this->cliMessages = config('backup-importer.cli-messages', true);
-        $this->importers = $this->buildImporters();
         $this->namespace = $this->buildNamespace();
+        $this->importers = $this->buildImporters();
         $this->connection = $this->makeConnection();
     }
 
@@ -114,22 +114,6 @@ class Importer
         }
 
         return $dbConfig;
-    }
-
-    /**
-     * Get the path of the importers
-     *
-     * @return string
-     */
-    public function getImportersPath(): string
-    {
-        $exploded = explode('\\', $this->namespace);
-
-        if(strtolower($exploded[0]) === 'app') {
-            unset($exploded[0]);
-        }
-
-        return app_path(implode(DIRECTORY_SEPARATOR, $exploded));
     }
 
     /**
@@ -211,12 +195,12 @@ class Importer
      */
     public function buildImporters(): array
     {
-        $importers = config('backup-importer.importers', ['*']);
+        $importers = config('backup-importer.use-importers', ['*']);
 
         if(in_array('*', $importers)) {
             $importers = [];
 
-            foreach(glob($this->getImportersPath().DIRECTORY_SEPARATOR.'*.php') as $importer) {
+            foreach(glob($this->getImporterPath().DIRECTORY_SEPARATOR.'*.php') as $importer) {
                 $importers[] = $this->namespace . '\\' .
                     str_replace('.php', '', last(explode(DIRECTORY_SEPARATOR, $importer)));
             }
